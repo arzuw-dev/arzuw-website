@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arzuw - Мои приложения и игры</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- ПЕРВЫМ подключаем Backendless -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backendless/6.4.2/backendless.min.js"></script>    <!-- ПОТОМ config.js -->
+    <script src="backendless.js"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <!-- Остальной код БЕЗ ИЗМЕНЕНИЙ -->
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Arzuw</h1>
+            <p class="tagline">Мои приложения и игры для вас</p>
+            <div class="stats-bar">
+                <span id="total-downloads">Всего скачиваний: загрузка...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <h2>Добро пожаловать в мой мир разработки</h2>
+                <p>Выбирайте категорию и исследуйте мои проекты</p>
+            </section>
+
+            <section class="categories">
+                <div class="category-card" onclick="showCategoryPage('android-apps')">
+                    <div class="card-icon">📱</div>
+                    <h3>Приложения для Android</h3>
+                    <p>Полезные инструменты для вашего устройства</p>
+                    <button class="card-btn">Исследовать</button>
+                </div>
+
+                <div class="category-card" onclick="showCategoryPage('windows-apps')">
+                    <div class="card-icon">💻</div>
+                    <h3>Приложения для Windows</h3>
+                    <p>Программы для вашего компьютера</p>
+                    <button class="card-btn">Исследовать</button>
+                </div>
+
+                <div class="category-card" onclick="showCategoryPage('windows-games')">
+                    <div class="card-icon">🎮</div>
+                    <h3>Игры для Windows</h3>
+                    <p>Развлечения для вашего досуга</p>
+                    <button class="card-btn">Исследовать</button>
+                </div>
+            </section>
+
+            <!-- Форма подписки -->
+            <section class="subscription-section">
+                <h3>Узнавайте о новых релизах первыми!</h3>
+                <form id="subscribe-form" class="subscribe-form">
+                    <input type="email" id="subscribe-email" placeholder="Ваш email" required>
+                    <button type="submit">Подписаться</button>
+                </form>
+                <p id="subscribe-message"></p>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Arzuw. Все права защищены.</p>
+            <p id="visit-counter">Посещений сайта: загрузка...</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приложения для Android - Arzuw</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- ПЕРВЫМ подключаем Backendless -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backendless/6.4.2/backendless.min.js"></script>
+    <!-- ПОТОМ config.js -->
+    <script src="backendless.js"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <!-- Остальной код БЕЗ ИЗМЕНЕНИЙ -->
+<body>
+    <header class="header">
+        <div class="container">
+            <button class="back-btn" onclick="window.location.href='index.html'">← На главную</button>
+            <h1 class="logo">Arzuw</h1>
+            <p class="tagline">Приложения для Android</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <h2>Мои приложения для Android</h2>
+                <p>Выберите приложение для скачивания</p>
+            </section>
+
+            <div class="app-grid">
+                <div class="app-card">
+                    <div class="app-icon">📱</div>
+                    <h3 class="app-title">Bar-Z</h3>
+                    <p class="app-description">Умное приложение для управления вашими задачами и проектами</p>
+                    <button class="download-btn" 
+                            onclick="trackDownload('Bar-Z Android', 'android', 'https://drive.google.com/uc?export=download&id=1ptgDjPwuzbiVKg8Y8wqkK2V8b4vd5B97')">
+                        Скачать APK
+                    </button>
+                    <div class="counter-badge" id="counter-bar-z">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">📊</div>
+                    <h3 class="app-title">Finance Tracker</h3>
+                    <p class="app-description">Отслеживайте ваши финансы и бюджет в удобном формате</p>
+                    <button class="download-btn" 
+                            onclick="trackDownload('Finance Tracker Android', 'android', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать APK
+                    </button>
+                    <div class="counter-badge" id="counter-finance">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">🌦️</div>
+                    <h3 class="app-title">Weather Pro</h3>
+                    <p class="app-description">Точный прогноз погоды с красивым интерфейсом</p>
+                    <button class="download-btn" 
+                            onclick="trackDownload('Weather Pro Android', 'android', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать APK
+                    </button>
+                    <div class="counter-badge" id="counter-weather">загрузка...</div>
+                </div>
+            </div>
+
+            <!-- Форма обратной связи -->
+            <section class="feedback-form">
+                <h3>Обратная связь</h3>
+                <form id="feedback-form">
+                    <div class="form-group">
+                        <label for="name">Ваше имя:</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Ваш email:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Тема:</label>
+                        <input type="text" id="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Сообщение:</label>
+                        <textarea id="message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Отправить</button>
+                </form>
+                <div id="feedback-message"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Arzuw. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Дополнительный скрипт для страницы Android приложений
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Инициализируем форму обратной связи
+            initFeedbackForm();
+        });
+
+        function initFeedbackForm() {
+            const form = document.getElementById('feedback-form');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await handleFeedback();
+                });
+            }
+        }
+
+        async function handleFeedback() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const messageElement = document.getElementById('feedback-message');
+
+            if (!name || !email || !subject || !message) {
+                showFormMessage(messageElement, 'Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+
+            const saved = await saveFeedback(name, email, subject, message);
+            
+            if (saved) {
+                showFormMessage(messageElement, 'Спасибо за ваш отзыв! Мы свяжемся с вами в ближайшее время.', 'success');
+                document.getElementById('feedback-form').reset();
+            } else {
+                showFormMessage(messageElement, 'Ошибка отправки отзыва. Попробуйте позже.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

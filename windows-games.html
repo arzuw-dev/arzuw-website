@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игры для Windows - Arzuw</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- ПЕРВЫМ подключаем Backendless -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backendless/6.4.2/backendless.min.js"></script>
+    <!-- ПОТОМ config.js -->
+    <script src="backendless.js"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <!-- Остальной код БЕЗ ИЗМЕНЕНИЙ -->
+<body>
+    <header class="header">
+        <div class="container">
+            <button class="back-btn" onclick="window.location.href='index.html'">← На главную</button>
+            <h1 class="logo">Arzuw</h1>
+            <p class="tagline">Игры для Windows</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <h2>Мои игры для Windows</h2>
+                <p>Увлекательные игры для вашего досуга</p>
+            </section>
+
+            <div class="app-grid">
+                <div class="app-card">
+                    <div class="app-icon">🎮</div>
+                    <h3 class="app-title">Space Adventure</h3>
+                    <p class="app-description">Захватывающее космическое приключение с красивой графикой</p>
+                    <div class="game-info">
+                        <span class="game-tag">Экшен</span>
+                        <span class="game-tag">Приключения</span>
+                    </div>
+                    <button class="download-btn game-btn" 
+                            onclick="trackDownload('Space Adventure', 'windows-game', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать Игру
+                    </button>
+                    <div class="counter-badge" id="counter-space-adventure">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">🧩</div>
+                    <h3 class="app-title">Puzzle Master</h3>
+                    <p class="app-description">Сотни увлекательных головоломок для развития мышления</p>
+                    <div class="game-info">
+                        <span class="game-tag">Головоломка</span>
+                        <span class="game-tag">Казуальная</span>
+                    </div>
+                    <button class="download-btn game-btn" 
+                            onclick="trackDownload('Puzzle Master', 'windows-game', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать Игру
+                    </button>
+                    <div class="counter-badge" id="counter-puzzle-master">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">🏎️</div>
+                    <h3 class="app-title">Racing Extreme</h3>
+                    <p class="app-description">Экстремальные гонки на мощных спортивных автомобилях</p>
+                    <div class="game-info">
+                        <span class="game-tag">Гонки</span>
+                        <span class="game-tag">Симулятор</span>
+                    </div>
+                    <button class="download-btn game-btn" 
+                            onclick="trackDownload('Racing Extreme', 'windows-game', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать Игру
+                    </button>
+                    <div class="counter-badge" id="counter-racing-extreme">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">⚔️</div>
+                    <h3 class="app-title">Dragon Quest</h3>
+                    <p class="app-description">РПГ игра в фэнтези мире с драконами и магией</p>
+                    <div class="game-info">
+                        <span class="game-tag">RPG</span>
+                        <span class="game-tag">Фэнтези</span>
+                    </div>
+                    <button class="download-btn game-btn" 
+                            onclick="trackDownload('Dragon Quest', 'windows-game', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать Игру
+                    </button>
+                    <div class="counter-badge" id="counter-dragon-quest">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">🏀</div>
+                    <h3 class="app-title">Basketball Pro</h3>
+                    <p class="app-description">Реалистичный баскетбольный симулятор с продвинутой физикой</p>
+                    <div class="game-info">
+                        <span class="game-tag">Спорт</span>
+                        <span class="game-tag">Симулятор</span>
+                    </div>
+                    <button class="download-btn game-btn" 
+                            onclick="trackDownload('Basketball Pro', 'windows-game', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать Игру
+                    </button>
+                    <div class="counter-badge" id="counter-basketball-pro">загрузка...</div>
+                </div>
+
+                <div class="app-card">
+                    <div class="app-icon">🧟</div>
+                    <h3 class="app-title">Zombie Survival</h3>
+                    <p class="app-description">Выживание в мире, захваченном зомби. Стройте базу, собирайте ресурсы</p>
+                    <div class="game-info">
+                        <span class="game-tag">Выживание</span>
+                        <span class="game-tag">Хоррор</span>
+                    </div>
+                    <button class="download-btn game-btn" 
+                            onclick="trackDownload('Zombie Survival', 'windows-game', 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА')">
+                        Скачать Игру
+                    </button>
+                    <div class="counter-badge" id="counter-zombie-survival">загрузка...</div>
+                </div>
+            </div>
+
+            <!-- Системные требования -->
+            <section class="system-requirements">
+                <h3>Системные требования</h3>
+                <div class="requirements-grid">
+                    <div class="requirement-card">
+                        <h4>Минимальные</h4>
+                        <ul>
+                            <li>ОС: Windows 10</li>
+                            <li>Процессор: Intel i3 или аналогичный</li>
+                            <li>Память: 4 GB RAM</li>
+                            <li>Видеокарта: Intel HD Graphics 4000</li>
+                            <li>Место на диске: 2 GB</li>
+                        </ul>
+                    </div>
+                    <div class="requirement-card">
+                        <h4>Рекомендуемые</h4>
+                        <ul>
+                            <li>ОС: Windows 11</li>
+                            <li>Процессор: Intel i5 или аналогичный</li>
+                            <li>Память: 8 GB RAM</li>
+                            <li>Видеокарта: NVIDIA GTX 1050</li>
+                            <li>Место на диске: 5 GB</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Форма обратной связи для игр -->
+            <section class="feedback-form">
+                <h3>Обратная связь по играм</h3>
+                <p>Сообщите о багах, предложите улучшения или задайте вопросы</p>
+                <form id="feedback-form">
+                    <div class="form-group">
+                        <label for="name">Ваше имя:</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Ваш email:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="game-select">Какая игра вас интересует?</label>
+                        <select id="game-select" class="form-select">
+                            <option value="Space Adventure">Space Adventure</option>
+                            <option value="Puzzle Master">Puzzle Master</option>
+                            <option value="Racing Extreme">Racing Extreme</option>
+                            <option value="Dragon Quest">Dragon Quest</option>
+                            <option value="Basketball Pro">Basketball Pro</option>
+                            <option value="Zombie Survival">Zombie Survival</option>
+                            <option value="Другое">Другое</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-type">Тип обращения:</label>
+                        <select id="feedback-type" class="form-select">
+                            <option value="Баг/Ошибка">Сообщить об ошибке</option>
+                            <option value="Предложение">Предложение по улучшению</option>
+                            <option value="Вопрос">Задать вопрос</option>
+                            <option value="Техподдержка">Техническая поддержка</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Тема сообщения:</label>
+                        <input type="text" id="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Подробное описание:</label>
+                        <textarea id="message" placeholder="Опишите проблему, предложение или вопрос максимально подробно..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Отправить сообщение</button>
+                </form>
+                <div id="feedback-message"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Arzuw. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Дополнительный скрипт для страницы игр
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Инициализируем форму обратной связи
+            initFeedbackForm();
+        });
+
+        function initFeedbackForm() {
+            const form = document.getElementById('feedback-form');
+            const gameSelect = document.getElementById('game-select');
+            const feedbackType = document.getElementById('feedback-type');
+            const subjectInput = document.getElementById('subject');
+
+            if (form) {
+                // Автозаполнение темы при выборе игры и типа обращения
+                function updateSubject() {
+                    const game = gameSelect.value;
+                    const type = feedbackType.value;
+                    if (game !== 'Другое') {
+                        subjectInput.value = `${type} - ${game}`;
+                    }
+                }
+
+                gameSelect.addEventListener('change', updateSubject);
+                feedbackType.addEventListener('change', updateSubject);
+
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await handleGameFeedback();
+                });
+            }
+        }
+
+        async function handleGameFeedback() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const game = document.getElementById('game-select').value;
+            const feedbackType = document.getElementById('feedback-type').value;
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const messageElement = document.getElementById('feedback-message');
+
+            if (!name || !email || !subject || !message) {
+                showFormMessage(messageElement, 'Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+
+            const finalSubject = `Game Feedback [${feedbackType}]: ${subject}`;
+            const finalMessage = `Игра: ${game}\nТип обращения: ${feedbackType}\n\n${message}`;
+
+            const saved = await saveFeedback(name, email, finalSubject, finalMessage);
+            
+            if (saved) {
+                showFormMessage(messageElement, 'Спасибо за ваш отзыв! Ваше сообщение очень важно для нас.', 'success');
+                document.getElementById('feedback-form').reset();
+            } else {
+                showFormMessage(messageElement, 'Ошибка отправки сообщения. Попробуйте позже.', 'error');
+            }
+        }
+
+        function showFormMessage(element, message, type) {
+            element.textContent = message;
+            element.className = type + '-message';
+            
+            setTimeout(() => {
+                element.textContent = '';
+                element.className = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
