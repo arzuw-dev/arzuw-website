@@ -21,18 +21,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function showStats() {
-    // Общий счетчик из localStorage
+    // Сначала загружаем из Backendless
+    await updateAppCountersFromBackendless();
+    
+    // Затем локальные (как fallback)
     const total = Object.values(localDownloadCounts).reduce((a, b) => a + b, 0);
     updateElementText('total-downloads', `Всего скачиваний: ${total}`);
     
-    // Счетчик посещений
+    // Счетчик посещений (локальный)
     let visits = parseInt(localStorage.getItem('page_visits') || 0);
     visits++;
     localStorage.setItem('page_visits', visits);
     updateElementText('visit-counter', `Посещений сайта: ${visits}`);
-    
-    // Загружаем счетчики из Backendless
-    await updateAppCountersFromBackendless();
 }
 
 // ОСНОВНАЯ ФУНКЦИЯ СКАЧИВАНИЯ
@@ -81,6 +81,7 @@ async function trackDownload(appName, platform, fileUrl = null) {
 }
 
 // Загрузка счетчиков из Backendless
+// Загрузка счетчиков из Backendless
 async function updateAppCountersFromBackendless() {
     if (!backendlessAvailable) {
         updateAllAppCounters();
@@ -89,16 +90,36 @@ async function updateAppCountersFromBackendless() {
     
     try {
         console.log("🔄 Загружаем статистику из Backendless...");
-        const downloadsCount = await Backendless.Data.of("downloads_stats").getObjectCount();
-        console.log("📊 Всего записей в Backendless:", downloadsCount);
         
-        // Можно добавить более детальную загрузку по приложениям
+        // Получаем ВСЕ записи скачиваний
+        const allDownloads = await Backendless.Data.of("downloads_stats").find();
+        console.log("📊 Все записи из Backendless:", allDownloads);
+        
+        // Считаем скачивания по каждому приложению
+        const backendlessCounts = {};
+        allDownloads.forEach(download => {
+            const appName = download.app_name;
+            backendlessCounts[appName] = (backendlessCounts[appName] || 0) + 1;
+        });
+        
+        console.log("🎯 Счетчики из Backendless:", backendlessCounts);
+        
+        // ОБНОВЛЯЕМ СЧЕТЧИКИ НА САЙТЕ ИЗ BACKENDLESS
+        for (const [appName, count] of Object.entries(backendlessCounts)) {
+            updateAppCounter(appName, count);
+            // Также обновляем локально для синхронизации
+            localDownloadCounts[appName] = count;
+            localStorage.setItem(`download_${appName}`, count);
+        }
+        
+        // Обновляем общий счетчик
+        const totalFromBackendless = Object.values(backendlessCounts).reduce((a, b) => a + b, 0);
+        updateElementText('total-downloads', `Всего скачиваний: ${totalFromBackendless}`);
         
     } catch (error) {
         console.log("⚠️ Не удалось загрузить из Backendless:", error);
+        updateAllAppCounters(); // Fallback на локальные
     }
-    
-    updateAllAppCounters();
 }
 
 // Функция подписки (исправленная)
