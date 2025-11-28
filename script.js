@@ -1,68 +1,41 @@
 // script.js - работа с локальным Backendless
 console.log("🚀 Загружен script.js");
 
+// script.js - исправленные функции для Backendless
+
 let localDownloadCounts = {};
 let backendlessAvailable = false;
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("🎯 Инициализация сайта...");
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log("🚀 Инициализация сайта...");
     
-    // Проверяем Backendless
-    backendlessAvailable = typeof Backendless !== 'undefined' && Backendless.isInitialized && Backendless.isInitialized();
-    console.log("Backendless доступен:", backendlessAvailable);
-    
-    initLocalCounters();
-    showStats();
-    initSubscribeForm();
-    
-    // Загружаем данные из Backendless если доступен
-    if (backendlessAvailable) {
-        loadFromBackendless();
-    }
+    // Ждем инициализации Backendless
+    setTimeout(async () => {
+        backendlessAvailable = typeof Backendless !== 'undefined' && Backendless.isInitialized && Backendless.isInitialized();
+        console.log("Backendless доступен:", backendlessAvailable);
+        
+        initLocalCounters();
+        await showStats();
+        initSubscribeForm();
+    }, 1000);
 });
 
-function initLocalCounters() {
-    const apps = [
-        'Bar-Z Android', 'Finance Tracker Android', 'Weather Pro Android',
-        'File Organizer Pro', 'Image Converter', 'Password Manager',
-        'Space Adventure', 'Puzzle Master', 'Racing Extreme'
-    ];
-    
-    apps.forEach(appName => {
-        const count = localStorage.getItem(`download_${appName}`) || 0;
-        localDownloadCounts[appName] = parseInt(count);
-    });
-    console.log("📊 Локальные счетчики:", localDownloadCounts);
-}
-
-async function loadFromBackendless() {
-    try {
-        console.log("🔄 Загружаем данные из Backendless...");
-        
-        // Загружаем статистику скачиваний
-        const downloadsCount = await Backendless.Data.of("downloads_stats").getObjectCount();
-        console.log("📥 Записей в downloads_stats:", downloadsCount);
-        
-        // Можно добавить загрузку отдельных счетчиков если нужно
-        
-    } catch (error) {
-        console.log("⚠️ Не удалось загрузить из Backendless:", error);
-    }
-}
-
-function showStats() {
+async function showStats() {
+    // Общий счетчик из localStorage
     const total = Object.values(localDownloadCounts).reduce((a, b) => a + b, 0);
     updateElementText('total-downloads', `Всего скачиваний: ${total}`);
     
+    // Счетчик посещений
     let visits = parseInt(localStorage.getItem('page_visits') || 0);
     visits++;
     localStorage.setItem('page_visits', visits);
     updateElementText('visit-counter', `Посещений сайта: ${visits}`);
     
-    updateAllAppCounters();
+    // Загружаем счетчики из Backendless
+    await updateAppCountersFromBackendless();
 }
 
-// ГЛАВНАЯ ФУНКЦИЯ СКАЧИВАНИЯ
+// ОСНОВНАЯ ФУНКЦИЯ СКАЧИВАНИЯ
 async function trackDownload(appName, platform, fileUrl = null) {
     console.log(`📥 Скачивание: ${appName}`);
     
@@ -71,20 +44,27 @@ async function trackDownload(appName, platform, fileUrl = null) {
     localDownloadCounts[appName]++;
     localStorage.setItem(`download_${appName}`, localDownloadCounts[appName]);
     
-    // Сохраняем в Backendless
+    // СОХРАНЕНИЕ В BACKENDLESS
     if (backendlessAvailable) {
         try {
-            await Backendless.Data.of("downloads_stats").save({
+            console.log("🔄 Сохраняем в Backendless...");
+            
+            const downloadData = {
                 app_name: appName,
                 platform: platform,
                 download_date: new Date(),
-                user_agent: navigator.userAgent,
+                user_agent: navigator.userAgent.substring(0, 250), // Ограничение длины
                 ip_address: await getIPAddress()
-            });
-            console.log("✅ Данные сохранены в Backendless");
+            };
+            
+            const result = await Backendless.Data.of("downloads_stats").save(downloadData);
+            console.log("✅ УСПЕХ: Данные сохранены в Backendless!", result);
+            
         } catch (error) {
-            console.log("⚠️ Ошибка сохранения в Backendless:", error);
+            console.error("❌ Ошибка сохранения в Backendless:", error);
         }
+    } else {
+        console.log("⚠️ Backendless недоступен, сохраняем только локально");
     }
     
     // Обновляем интерфейс
@@ -100,10 +80,81 @@ async function trackDownload(appName, platform, fileUrl = null) {
     return false;
 }
 
-// Вспомогательные функции
-function updateElementText(elementId, text) {
-    const element = document.getElementById(elementId);
-    if (element) element.textContent = text;
+// Загрузка счетчиков из Backendless
+async function updateAppCountersFromBackendless() {
+    if (!backendlessAvailable) {
+        updateAllAppCounters();
+        return;
+    }
+    
+    try {
+        console.log("🔄 Загружаем статистику из Backendless...");
+        const downloadsCount = await Backendless.Data.of("downloads_stats").getObjectCount();
+        console.log("📊 Всего записей в Backendless:", downloadsCount);
+        
+        // Можно добавить более детальную загрузку по приложениям
+        
+    } catch (error) {
+        console.log("⚠️ Не удалось загрузить из Backendless:", error);
+    }
+    
+    updateAllAppCounters();
+}
+
+// Функция подписки (исправленная)
+async function handleSubscription() {
+    const emailInput = document.getElementById('subscribe-email');
+    const messageElement = document.getElementById('subscribe-message');
+    const email = emailInput.value.trim();
+
+    if (!email) {
+        showFormMessage(messageElement, 'Введите email', 'error');
+        return;
+    }
+
+    if (backendlessAvailable) {
+        try {
+            console.log("🔄 Сохраняем подписчика в Backendless...");
+            
+            await Backendless.Data.of("subscribers").save({
+                email: email,
+                subscription_date: new Date(),
+                is_active: true
+            });
+            
+            showFormMessage(messageElement, 'Спасибо за подписку! Данные сохранены.', 'success');
+            emailInput.value = '';
+            
+        } catch (error) {
+            console.error("❌ Ошибка сохранения подписчика:", error);
+            showFormMessage(messageElement, 'Ошибка подписки. Попробуйте позже.', 'error');
+        }
+    } else {
+        // Локальное сохранение
+        let subscribers = JSON.parse(localStorage.getItem('subscribers') || '[]');
+        if (subscribers.includes(email)) {
+            showFormMessage(messageElement, 'Email уже подписан', 'error');
+        } else {
+            subscribers.push(email);
+            localStorage.setItem('subscribers', JSON.stringify(subscribers));
+            showFormMessage(messageElement, 'Спасибо за подписку! (локально)', 'success');
+            emailInput.value = '';
+        }
+    }
+}
+
+// Остальные функции без изменений...
+function initLocalCounters() {
+    const apps = [
+        'Bar-Z Android', 'Finance Tracker Android', 'Weather Pro Android',
+        'File Organizer Pro', 'Image Converter', 'Password Manager',
+        'Space Adventure', 'Puzzle Master', 'Racing Extreme'
+    ];
+    
+    apps.forEach(appName => {
+        const count = localStorage.getItem(`download_${appName}`) || 0;
+        localDownloadCounts[appName] = parseInt(count);
+    });
 }
 
 function updateAllAppCounters() {
@@ -128,7 +179,7 @@ function getCounterId(appName) {
         'Finance Tracker Android': 'counter-finance',
         'Weather Pro Android': 'counter-weather',
         'File Organizer Pro': 'counter-file-organizer',
-        'Image Converter': 'counter-image-converter', 
+        'Image Converter': 'counter-image-converter',
         'Password Manager': 'counter-password-manager',
         'Space Adventure': 'counter-space-adventure',
         'Puzzle Master': 'counter-puzzle-master',
@@ -143,11 +194,15 @@ async function getIPAddress() {
         const data = await response.json();
         return data.ip;
     } catch (error) {
-        return 'local';
+        return 'unknown';
     }
 }
 
-// Остальные функции без изменений
+function updateElementText(elementId, text) {
+    const element = document.getElementById(elementId);
+    if (element) element.textContent = text;
+}
+
 function showCategoryPage(category) {
     const pages = {
         'android-apps': 'android-apps.html',
@@ -164,44 +219,6 @@ function initSubscribeForm() {
             e.preventDefault();
             await handleSubscription();
         });
-    }
-}
-
-async function handleSubscription() {
-    const emailInput = document.getElementById('subscribe-email');
-    const messageElement = document.getElementById('subscribe-message');
-    const email = emailInput.value.trim();
-
-    if (!email) {
-        showFormMessage(messageElement, 'Введите email', 'error');
-        return;
-    }
-
-    if (backendlessAvailable) {
-        try {
-            // Сохраняем в Backendless
-            await Backendless.Data.of("subscribers").save({
-                email: email,
-                subscription_date: new Date(),
-                is_active: true
-            });
-            showFormMessage(messageElement, 'Спасибо за подписку!', 'success');
-            emailInput.value = '';
-        } catch (error) {
-            console.log("Ошибка подписки:", error);
-            showFormMessage(messageElement, 'Ошибка подписки', 'error');
-        }
-    } else {
-        // Локальное сохранение
-        let subscribers = JSON.parse(localStorage.getItem('subscribers') || '[]');
-        if (subscribers.includes(email)) {
-            showFormMessage(messageElement, 'Email уже подписан', 'error');
-        } else {
-            subscribers.push(email);
-            localStorage.setItem('subscribers', JSON.stringify(subscribers));
-            showFormMessage(messageElement, 'Спасибо за подписку!', 'success');
-            emailInput.value = '';
-        }
     }
 }
 
