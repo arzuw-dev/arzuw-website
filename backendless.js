@@ -1,22 +1,27 @@
-// backendless.js - локальная имитация Backendless
+// backendless.js - улучшенная версия
 (function(global) {
     'use strict';
     
+    const REAL_BACKENDLESS_URL = 'https://api.backendless.com';
+    
     var Backendless = {
         appId: null,
-        jsApiKey: null, 
+        jsApiKey: null,
         serverURL: null,
         initialized: false,
         
         initApp: function(config) {
             this.appId = config.APP_ID;
             this.jsApiKey = config.JS_API_KEY;
-            this.serverURL = config.API_URL;
+            this.serverURL = config.API_URL || REAL_BACKENDLESS_URL;
             this.initialized = true;
             
-            console.log("✅ Backendless инициализирован (локальная версия)");
+            console.log("✅ Backendless инициализирован");
             console.log("App ID:", this.appId);
             console.log("Server URL:", this.serverURL);
+            
+            // Тестируем подключение
+            this.testConnection();
             
             return this;
         },
@@ -25,118 +30,146 @@
             return this.initialized;
         },
         
+        // Тест подключения к реальному Backendless
+        testConnection: function() {
+            fetch(`${this.serverURL}/${this.appId}/${this.jsApiKey}/data/downloads_stats`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log("🔗 Connection test:", response.status);
+                if (response.ok) {
+                    console.log("✅ Подключение к Backendless успешно!");
+                } else {
+                    console.log("⚠️ Backendless доступен, но с ошибкой:", response.status);
+                }
+            })
+            .catch(error => {
+                console.log("❌ Ошибка подключения к Backendless:", error.message);
+            });
+        },
+        
         Data: {
             of: function(tableName) {
                 return {
+                    // РЕАЛЬНОЕ сохранение в Backendless
                     save: function(data) {
-                        return new Promise((resolve) => {
-                            console.log("💾 Локальное сохранение в таблицу:", tableName);
+                        return new Promise((resolve, reject) => {
+                            if (!Backendless.initialized) {
+                                reject(new Error("Backendless не инициализирован"));
+                                return;
+                            }
+
+                            const url = `${Backendless.serverURL}/${Backendless.appId}/${Backendless.jsApiKey}/data/${tableName}`;
+                            
+                            console.log("💾 Сохраняем в Backendless:", url);
                             console.log("Данные:", data);
-                            
-                            // Сохраняем в localStorage для отслеживания
-                            var key = 'backendless_' + tableName;
-                            var existingData = JSON.parse(localStorage.getItem(key) || '[]');
-                            var newItem = {
-                                ...data,
-                                objectId: 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                                created: new Date(),
-                                ___class: tableName
-                            };
-                            
-                            existingData.push(newItem);
-                            localStorage.setItem(key, JSON.stringify(existingData));
-                            
-                            console.log("✅ Данные сохранены локально. ObjectId:", newItem.objectId);
-                            resolve(newItem);
+
+                            fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(data)
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(result => {
+                                console.log("✅ УСПЕХ: Данные сохранены в Backendless!", result);
+                                
+                                // Дублируем в localStorage для надежности
+                                const localKey = 'backendless_' + tableName;
+                                const existingData = JSON.parse(localStorage.getItem(localKey) || '[]');
+                                existingData.push({...data, objectId: result.objectId, created: new Date()});
+                                localStorage.setItem(localKey, JSON.stringify(existingData));
+                                
+                                resolve(result);
+                            })
+                            .catch(error => {
+                                console.error("❌ Ошибка сохранения в Backendless:", error);
+                                
+                                // Локальное сохранение как fallback
+                                const localKey = 'backendless_' + tableName;
+                                const existingData = JSON.parse(localStorage.getItem(localKey) || '[]');
+                                const localItem = {
+                                    ...data,
+                                    objectId: 'local_' + Date.now(),
+                                    created: new Date(),
+                                    ___class: tableName,
+                                    error: error.message
+                                };
+                                existingData.push(localItem);
+                                localStorage.setItem(localKey, JSON.stringify(existingData));
+                                
+                                console.log("💾 Данные сохранены локально из-за ошибки");
+                                resolve(localItem);
+                            });
                         });
                     },
                     
+                    // РЕАЛЬНЫЙ запрос количества
                     getObjectCount: function(queryBuilder) {
-                        return new Promise((resolve) => {
-                            var key = 'backendless_' + tableName;
-                            var existingData = JSON.parse(localStorage.getItem(key) || '[]');
+                        return new Promise((resolve, reject) => {
+                            if (!Backendless.initialized) {
+                                // Локальный fallback
+                                const localKey = 'backendless_' + tableName;
+                                const existingData = JSON.parse(localStorage.getItem(localKey) || '[]');
+                                resolve(existingData.length);
+                                return;
+                            }
+
+                            const url = `${Backendless.serverURL}/${Backendless.appId}/${Backendless.jsApiKey}/data/${tableName}/count`;
                             
-                            console.log("📊 Локальный запрос количества записей в", tableName + ":", existingData.length);
-                            resolve(existingData.length);
+                            fetch(url)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(result => {
+                                console.log(`📊 Backendless: ${tableName} count =`, result);
+                                resolve(result);
+                            })
+                            .catch(error => {
+                                console.error("❌ Ошибка получения количества:", error);
+                                // Локальный fallback
+                                const localKey = 'backendless_' + tableName;
+                                const existingData = JSON.parse(localStorage.getItem(localKey) || '[]');
+                                resolve(existingData.length);
+                            });
                         });
                     },
                     
                     find: function(queryBuilder) {
-                        return new Promise((resolve) => {
-                            var key = 'backendless_' + tableName;
-                            var existingData = JSON.parse(localStorage.getItem(key) || '[]');
-                            
-                            console.log("🔍 Локальный поиск в", tableName + ". Найдено:", existingData.length, "записей");
+                        return new Promise((resolve, reject) => {
+                            const localKey = 'backendless_' + tableName;
+                            const existingData = JSON.parse(localStorage.getItem(localKey) || '[]');
                             resolve(existingData);
-                        });
-                    },
-                    
-                    remove: function(object) {
-                        return new Promise((resolve) => {
-                            var key = 'backendless_' + tableName;
-                            var existingData = JSON.parse(localStorage.getItem(key) || '[]');
-                            var newData = existingData.filter(item => item.objectId !== object.objectId);
-                            
-                            localStorage.setItem(key, JSON.stringify(newData));
-                            console.log("🗑️ Удалена запись из", tableName);
-                            resolve({});
                         });
                     }
                 };
             }
         },
         
-        // Простые утилиты
         Logging: {
-            debug: function(message) { console.debug("🔍 Backendless Debug:", message); },
-            info: function(message) { console.info("ℹ️ Backendless Info:", message); },
-            warn: function(message) { console.warn("⚠️ Backendless Warn:", message); },
-            error: function(message) { console.error("❌ Backendless Error:", message); }
-        },
-        
-        // Имитация пользователей
-        UserService: {
-            register: function(user) {
-                return new Promise((resolve) => {
-                    console.log("👤 Регистрация пользователя:", user.email);
-                    var users = JSON.parse(localStorage.getItem('backendless_users') || '[]');
-                    var newUser = {
-                        ...user,
-                        objectId: 'user_' + Date.now(),
-                        created: new Date()
-                    };
-                    users.push(newUser);
-                    localStorage.setItem('backendless_users', JSON.stringify(users));
-                    resolve(newUser);
-                });
-            },
-            
-            login: function(email, password) {
-                return new Promise((resolve, reject) => {
-                    console.log("🔐 Вход пользователя:", email);
-                    var users = JSON.parse(localStorage.getItem('backendless_users') || '[]');
-                    var user = users.find(u => u.email === email && u.password === password);
-                    if (user) {
-                        resolve(user);
-                    } else {
-                        reject(new Error("Неверный email или пароль"));
-                    }
-                });
-            }
+            debug: function(message) { console.debug("🔍 Backendless:", message); },
+            info: function(message) { console.info("ℹ️ Backendless:", message); },
+            warn: function(message) { console.warn("⚠️ Backendless:", message); },
+            error: function(message) { console.error("❌ Backendless:", message); }
         }
     };
 
-    // Экспортируем в глобальную область видимости
+    // Экспортируем
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = Backendless;
     } else {
         global.Backendless = Backendless;
-        
-        // Автоматическая инициализация при загрузке
-        if (typeof window !== 'undefined') {
-            window.addEventListener('DOMContentLoaded', function() {
-                console.log("🎯 Backendless готов к использованию");
-            });
-        }
     }
 })(typeof window !== 'undefined' ? window : global);
