@@ -1,41 +1,62 @@
-// config.js - конфигурация для локального Backendless
-console.log("🎯 Загружаем конфигурацию...");
+// config.js - исправленная версия для онлайн
+console.log("🎯 Инициализация Backendless...");
 
-function initializeBackendless() {
-    if (typeof Backendless === 'undefined') {
-        console.error("❌ Backendless не загружен!");
-        return false;
-    }
+// Функция для проверки инициализации
+function waitForBackendless() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (typeof Backendless !== 'undefined' && Backendless.initApp) {
+                clearInterval(checkInterval);
+                resolve(true);
+            }
+        }, 100);
+        
+        // Таймаут 5 секунд
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve(false);
+        }, 5000);
+    });
+}
 
+// Основная инициализация
+async function initializeBackendless() {
     try {
-        var config = {
+        const backendlessLoaded = await waitForBackendless();
+        
+        if (!backendlessLoaded) {
+            console.error("❌ Backendless не загрузился");
+            return false;
+        }
+
+        const config = {
             APP_ID: "70683950-CA8A-40D4-9E35-735748BE65CF",
-            JS_API_KEY: "0E23A285-AA17-46C7-9F9A-59F4F9E37FF2", 
+            JS_API_KEY: "0E23A285-AA17-46C7-9F9A-59F4F9E37FF2",
             API_URL: "https://api.backendless.com"
         };
 
+        console.log("🔧 Инициализируем с конфигом:", config);
+        
         Backendless.initApp(config);
         
-        console.log("✅ Backendless успешно инициализирован!");
-        console.log("📍 Режим: Локальное хранилище");
-        return true;
+        if (Backendless.isInitialized()) {
+            console.log("✅ Backendless инициализирован!");
+            return true;
+        } else {
+            console.error("❌ Backendless не инициализирован");
+            return false;
+        }
         
     } catch (error) {
-        console.error("💥 Ошибка инициализации Backendless:", error);
+        console.error("💥 Ошибка инициализации:", error);
         return false;
     }
 }
 
-// Автоматическая инициализация
-var backendlessInitialized = false;
+// Запускаем инициализацию
+let backendlessInitialized = false;
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("🚀 DOM загружен, инициализируем Backendless...");
-    backendlessInitialized = initializeBackendless();
-    
-    if (backendlessInitialized) {
-        console.log("🎉 Backendless готов к работе!");
-    } else {
-        console.log("⚠️ Backendless не инициализирован, используем локальные счетчики");
-    }
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log("🚀 DOM загружен, запускаем Backendless...");
+    backendlessInitialized = await initializeBackendless();
 });
